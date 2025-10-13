@@ -2,6 +2,8 @@
 using ExpensesTrackerApp.Configuration;
 using ExpensesTrackerApp.Data;
 using ExpensesTrackerApp.Repositories;
+using ExpensesTrackerApp.Services;
+using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -18,6 +20,7 @@ namespace ExpensesTrackerApp
             builder.Services.AddDbContext<ExpenseAppDbContext>(options => options.UseSqlServer(connString));  // DBContext with our DB
 
             builder.Services.AddRepositories();                                     // User of repos
+            builder.Services.AddScoped<IApplicationService, ApplicationService>();
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());  //Mapper
             builder.Host.UseSerilog((ctx, lc) =>                                    //Serilog
                 lc.ReadFrom.Configuration(ctx.Configuration));

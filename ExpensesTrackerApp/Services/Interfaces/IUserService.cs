@@ -3,7 +3,7 @@ using ExpensesTrackerApp.Data;
 using ExpensesTrackerApp.DTO;
 using ExpensesTrackerApp.Models;
 
-namespace ExpensesTrackerApp.Repositories.Interfaces
+namespace ExpensesTrackerApp.Services.Interfaces
 {
     public interface IUserService
     {

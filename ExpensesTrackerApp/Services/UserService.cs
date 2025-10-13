@@ -6,6 +6,7 @@ using ExpensesTrackerApp.DTO;
 using ExpensesTrackerApp.Exceptions;
 using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Repositories.Interfaces;
+using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,7 +14,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 
-namespace ExpensesTrackerApp.Repositories
+namespace ExpensesTrackerApp.Services
 {
     public class UserService : IUserService
     {
@@ -117,29 +118,46 @@ namespace ExpensesTrackerApp.Repositories
 
         public string CreateUserToken(int userId, string username, string email, UserRole userRole, string appSecurityKey)
         {
+            //  Create a symmetric security key from your secret string.
+            // This key will be used to digitally sign the token.
             var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(appSecurityKey));
+
+            //  Define how the token will be signed — here we use HMAC-SHA256.
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+            //  Define the information (claims) that will be embedded inside the token.
+            // used later to identify the user and their permissions.
             var claimsInfo = new List<Claim>
-            {
+                {
+                // The user's unique ID
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Role, userRole.ToString())
-            };
 
+                // The username (used to identify the user)
+                new Claim(ClaimTypes.Name, username),
+
+                // The user's email address
+                new Claim(ClaimTypes.Email, email),
+
+                // The user's role (used for role-based authorization)
+                new Claim(ClaimTypes.Role, userRole.ToString())
+                };
+
+            //  Create the JWT itself.
+            //  specify the issuer, audience, claims, expiration time, and signing credentials.
             var jwtSecurityToken = new JwtSecurityToken(
-                issuer: "https://localhost:5001",
-                audience: "https://localhost:5001",
-                claims: claimsInfo,
-                expires: DateTime.UtcNow.AddHours(3),
-                signingCredentials: signingCredentials
+                issuer: "https://localhost:5001",   // Who created and issued this token
+                audience: "https://localhost:5001", // Who the token is intended for (can be your app)
+                claims: claimsInfo,                 // The claims list from above
+                expires: DateTime.UtcNow.AddHours(3), // Token will expire after 3 hours
+                signingCredentials: signingCredentials // The digital signature info
             );
 
-            // Serialize the token to a string
+            //  Serialize (convert) the token object into a string you can return or send to the client.
             var userToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
+            // Return the final token string — this is what will be given to the client.
             return userToken;
         }
+
     }
 }
