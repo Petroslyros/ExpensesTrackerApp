@@ -54,5 +54,42 @@ namespace ExpensesTrackerApp.Repositories
 
             return new PaginatedResult<User>(data, totalRecords, pageNumber, pageSize);
         }
+
+
+        #region docs
+        /// <summary>
+        /// Checks whether a user with the specified email already exists.
+        /// </summary>
+        /// <param name="email">The email address to check.</param>
+        /// <returns><c>true</c> if the email exists; otherwise, <c>false</c>.</returns>
+        #endregion
+        public async Task<bool> EmailExistsAsync(string? email) => await context.Users.AnyAsync(u => u.Email == email);
+
+
+
+
+        #region docs
+        /// <summary>
+        /// Updates an existing user with new data.
+        /// </summary>
+        /// <param name="id">The ID of the user to update.</param>
+        /// <param name="user">The updated <see cref="User"/> object.</param>
+        /// <returns>
+        /// The original <see cref="User"/> object if found; otherwise, <c>null</c>.
+        /// </returns>
+        #endregion
+        public async Task<User?> UpdateAsync(int id, User user)
+        {
+            var existingUser = await context.Users.FindAsync(id);
+            if (existingUser == null)
+            {
+                return null;
+            }
+
+            context.Users.Attach(user);
+            context.Entry(user).State = EntityState.Modified;  // Marks the UserProfile entity as modified
+
+            return existingUser;
+        }
     }
 }
