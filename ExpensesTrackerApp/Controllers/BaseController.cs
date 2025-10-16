@@ -14,8 +14,8 @@ namespace ExpensesTrackerApp.Controllers
     // [Produces("application/json")] default since it derives from ControllerBase
     public class BaseController : ControllerBase
     {
-        public readonly IApplicationService _applicationService;
-        private ApplicationUser? _appUser;  // this is used to cache the result of parsing the claims
+        public readonly IApplicationService applicationService;
+        private ApplicationUser? appUser;  // this is used to cache the result of parsing the claims
 
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace ExpensesTrackerApp.Controllers
         /// 
         protected BaseController(IApplicationService applicationService)
         {
-            _applicationService = applicationService;
+            applicationService = applicationService;
         }
 
 
@@ -46,15 +46,15 @@ namespace ExpensesTrackerApp.Controllers
                     var userClaimsId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     _ = int.TryParse(userClaimsId, out int id);
 
-                    _appUser = new ApplicationUser { Id = id };
+                    appUser = new ApplicationUser { Id = id };
 
                     var userClaimsName = User.FindFirst(ClaimTypes.Name)?.Value;
                     var userClaimsEmail = User.FindFirst(ClaimTypes.Email)?.Value;
 
-                    _appUser.Username = userClaimsName!;
-                    _appUser.Email = userClaimsEmail!;
+                    appUser.Username = userClaimsName!;
+                    appUser.Email = userClaimsEmail!;
 
-                    return _appUser;
+                    return appUser;
                 }
 
                 return null;
