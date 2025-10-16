@@ -2,4 +2,4 @@ The Expenses Tracker API is a clean and modular ASP.NET Core 8 Web API designed 
 
 The project follows a layered architecture using the Repository and Service patterns for maintainability and scalability. Data transfer between layers is handled through DTOs and AutoMapper, while a custom middleware ensures consistent global error handling and structured logging with Serilog.
 
-Built with Entity Framework Core and SQL Server, this API demonstrates best practices in backend development — including dependency injection, clean separation of concerns, and secure authentication — making it both practical and educational for real-world projects.
+Built with Entity Framework Core and SQL Server, this API demonstrates dependency injection, clean separation of concerns, and secure authentication.
