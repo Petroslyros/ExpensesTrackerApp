@@ -23,6 +23,22 @@ namespace ExpensesTrackerApp.Services
             this.mapper = mapper;
         }
 
+        public async Task<UserReadOnlyDTO?> GetUserByIdAsync(int id)
+        {
+            User? user = null;
+
+            try
+            {
+                user = await unitOfWork.UserRepository.GetAsync(id);
+                logger.LogInformation("User found with ID : {Id} ", id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error retrieving user by ID : {Id}. {Mesasge}", id, ex.Message);
+
+            }
+            return mapper.Map<UserReadOnlyDTO>(user);
+        }
 
         public async Task<PaginatedResult<UserReadOnlyDTO>> GetPaginatedUsersFilteredAsync(int pageNumber, int pageSize,
             UserFiltersDTO userFiltersDTO)
