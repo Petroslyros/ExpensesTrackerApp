@@ -2,7 +2,7 @@
 
 namespace ExpensesTrackerApp.DTO
 {
-    public class RegisterUserDTO
+    public class UserRegisterDTO
     {
         [Required(ErrorMessage = "Username is required")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Username must be between 2 and 50 characters.")]
