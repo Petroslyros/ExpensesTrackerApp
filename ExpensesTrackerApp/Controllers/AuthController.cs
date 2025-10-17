@@ -31,19 +31,29 @@ namespace ExpensesTrackerApp.Controllers
         [HttpPost("login/access-token")]
         public async Task<ActionResult<JwtTokenDTO>> Login([FromBody] UserLoginDTO credentials)
         {
-            var user = await applicationService.UserService.VerifyAndGetUserAsync(credentials) ??
-                throw new EntityNotAuthorizedException("User", "Bad credentials. Username or password did not match");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var userToken = applicationService.AuthService
-                .CreateUserToken(user.Id, user.Username!, user.Email!, user.UserRole, configuration["Authentication:SecretKey"]!);
+            var user = await applicationService.UserService.VerifyAndGetUserAsync(credentials)
+                ?? throw new EntityNotAuthorizedException("User", "Invalid username or password");
 
-            JwtTokenDTO accessToken = new()
+            var token = applicationService.UserService.CreateUserToken(
+                user.Id,
+                user.Username!,
+                user.Email!,
+                user.UserRole,
+                configuration["Authentication:SecretKey"]!
+            );
+
+            var jwtToken = new JwtTokenDTO
             {
-                AccessToken = userToken,
-                TokenType = "Bearer"
+                Token = token,
+                Username = user.Username!,
+                Role = user.UserRole.ToString(),
+                ExpiresAt = DateTime.UtcNow.AddHours(3)
             };
 
-            return Ok(accessToken);
+            return Ok(jwtToken);
         }
 
 
