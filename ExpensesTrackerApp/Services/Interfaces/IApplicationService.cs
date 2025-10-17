@@ -6,6 +6,6 @@
         ExpenseService ExpenseService { get; }
         ExpenseCategoryService ExpenseCategoryService { get; }
 
-        AuthService AuthService { get; }
+
     }
 }

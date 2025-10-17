@@ -20,6 +20,6 @@ namespace ExpensesTrackerApp.Services
 
         public ExpenseCategoryService ExpenseCategoryService => new(unitOfWork, mapper);
 
-        public AuthService AuthService => throw new NotImplementedException();
+
     }
 }

@@ -1,7 +1,7 @@
 
 using ExpensesTrackerApp.Configuration;
+using ExpensesTrackerApp.Core.Helpers;
 using ExpensesTrackerApp.Data;
-using ExpensesTrackerApp.Helpers;
 using ExpensesTrackerApp.Repositories;
 using ExpensesTrackerApp.Services;
 using ExpensesTrackerApp.Services.Interfaces;
@@ -11,7 +11,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using SchoolApp.Helpers;
 using Serilog;
 using System.Text;
 
@@ -59,11 +58,11 @@ namespace ExpensesTrackerApp
                     ValidIssuer = "https://localhost:5001",
 
                     ValidateAudience = true,
-                    ValidAudience = "https://localhost:50001",
+                    ValidAudience = "https://localhost:5001",
 
                     ValidateLifetime = true, //ensure not expired
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettinsg["SecretKey"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettinsg["SecretKey"]!))
 
                 };
             });
@@ -107,7 +106,7 @@ namespace ExpensesTrackerApp
             });
 
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Provides info and use of APIs 
             builder.Services.AddEndpointsApiExplorer();
 
             // Configures Swagger UI and security schemes(JWT auth support)
@@ -135,21 +134,25 @@ namespace ExpensesTrackerApp
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "School App v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Expenses App v1"));
             }
+
+
 
             app.UseHttpsRedirection();
 
             //Applies CORS rules 
-            app.UseCors();
+            app.UseCors("AllowAll");
+
+            //Errorhandler
+            app.UseMiddleware<ErrorHandlerMiddleware>();
 
             // Applies Authentication middleware
             app.UseAuthentication();
 
             app.UseAuthorization();
 
-            //Errorhandler
-            app.UseMiddleware<ErrorHandlerMiddleware>();
+
 
             //Maps controller endpoints to route requests.
             app.MapControllers();
