@@ -1,4 +1,5 @@
-﻿using ExpensesTrackerApp.Models;
+﻿using AutoMapper;
+using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,6 +17,7 @@ namespace ExpensesTrackerApp.Controllers
     {
 
         public readonly IApplicationService applicationService;
+        protected readonly IMapper mapper;
 
         public BaseController(IApplicationService applicationService)
         {

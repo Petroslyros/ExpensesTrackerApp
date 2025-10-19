@@ -1,6 +1,9 @@
-﻿using ExpensesTrackerApp.DTO;
+﻿using ExpensesTrackerApp.Core.Filters;
+using ExpensesTrackerApp.DTO;
 using ExpensesTrackerApp.Exceptions;
+using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpensesTrackerApp.Controllers
@@ -9,7 +12,7 @@ namespace ExpensesTrackerApp.Controllers
     /// <summary>
     /// Controller for managing users 
     /// </summary>
-    [Route("api/users/")]
+    //[Route("api/users/")]
     public class UsersController : BaseController
     {
         private readonly IConfiguration configuration;
@@ -22,10 +25,11 @@ namespace ExpensesTrackerApp.Controllers
 
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserReadOnlyDTO>> GetUserById(int id)
         {
             if (AppUser?.Id != id && !User.IsInRole("Admin"))
-                return Forbid("You can only access your own profile.");
+                return Forbid();
 
 
             UserReadOnlyDTO userReadOnlyDTO = await applicationService.UserService.GetUserByIdAsync(id)
@@ -52,7 +56,64 @@ namespace ExpensesTrackerApp.Controllers
             );
         }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var result = await applicationService.UserService.DeleteUserAsync(id);
+            if (!result) return NotFound();
+
+            return Ok(new { message = $"User with ID {id} was successfully deleted." });
+
+        }
 
 
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserReadOnlyDTO>> UpdateUser(int id, [FromBody] UpdateUserDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedUser = await applicationService.UserService.UpdateUserAsync(id, dto);
+
+            return Ok(updatedUser);
+        }
+
+        [HttpGet("username")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserReadOnlyDTO>> GetByUsername([FromQuery] string username)
+        {
+            if (AppUser?.Username != username && !User.IsInRole("Admin"))
+                throw new EntityForbiddenException("User", "You can only access your own profile.");
+
+            // Service already returns UserReadOnlyDTO
+            var userDto = await applicationService.UserService.GetUserByUsernameAsync(username)
+                          ?? throw new EntityNotFoundException("User", $"User: {username} not found");
+
+            return Ok(userDto);
+        }
+
+        [HttpGet("paginated")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PaginatedResult<UserReadOnlyDTO>>> GetPaginatedUsersFiltered(
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 10,
+                [FromQuery] string? username = null,
+                [FromQuery] string? email = null,
+                [FromQuery] string? userRole = null)
+        {
+            // Create filter DTO from query parameters
+            var filters = new UserFiltersDTO
+            {
+                UserName = username,
+                Email = email,
+                UserRole = userRole
+            };
+
+            var result = await applicationService.UserService.GetPaginatedUsersFilteredAsync(pageNumber, pageSize, filters);
+
+            return Ok(result);
+        }
     }
 }
