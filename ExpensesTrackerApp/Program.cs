@@ -41,6 +41,7 @@ namespace ExpensesTrackerApp
             builder.Host.UseSerilog((ctx, lc) =>
                 lc.ReadFrom.Configuration(ctx.Configuration));
 
+
             // This configures JWT-based authentication using bearer tokens
             builder.Services.AddAuthentication(options =>
             {
