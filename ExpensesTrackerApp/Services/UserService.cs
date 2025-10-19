@@ -157,6 +157,50 @@ namespace ExpensesTrackerApp.Services
             return mapper.Map<UserReadOnlyDTO>(user);
         }
 
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            var user = await unitOfWork.UserRepository.GetAsync(id);
+            if (user == null) throw new EntityNotFoundException("User", $"User with ID {id} not found");
+
+            bool deleted = await unitOfWork.UserRepository.DeleteAsync(id);
+
+            await unitOfWork.SaveAsync();
+
+            logger.LogInformation("User deleted successffuly with ID {UserId}", id);
+
+            return true;
+        }
+
+        public async Task<UserReadOnlyDTO> UpdateUserAsync(int userId, UpdateUserDTO dto)
+        {
+            // Get the existing user
+            var user = await unitOfWork.UserRepository.GetAsync(userId)
+                ?? throw new EntityNotFoundException("User", $"User with ID {userId} not found");
+
+            // Handle email change
+            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != user.Email)
+            {
+                if (await unitOfWork.UserRepository.EmailExistsAsync(dto.Email))
+                    throw new EntityAlreadyExistsException("User", $"Email '{dto.Email}' is already in use.");
+            }
+            else
+            {
+                dto.Email = null; // prevent AutoMapper from overwriting existing email
+            }
+
+            // Map DTO to entity (other fields only)
+            mapper.Map(dto, user);
+
+            // Update in DB
+            await unitOfWork.UserRepository.UpdateAsync(user);
+            await unitOfWork.SaveAsync();
+
+            logger.LogInformation("User updated successfully: {UserId}", user.Id);
+
+            // Return mapped DTO
+            return mapper.Map<UserReadOnlyDTO>(user);
+        }
+
 
 
         /// <summary>
