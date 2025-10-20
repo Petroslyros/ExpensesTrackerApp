@@ -1,14 +1,11 @@
 ﻿namespace ExpensesTrackerApp.DTO
 {
     public record ExpenseInsertDTO(
-
-        string Title,
-        decimal Amount,
-        DateTime Date,
-        int UserId,
-        int ExpenseCategoryId
-
-    );
+    string Title,
+    decimal Amount,
+    DateTime Date,
+    string CategoryName     // typed by the user
+);
 
 
 }
