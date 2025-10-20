@@ -115,5 +115,17 @@ namespace ExpensesTrackerApp.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PaginatedResult<UserReadOnlyDTO>>> GetAllUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await applicationService.UserService.GetAllUsersAsync(pageNumber, pageSize);
+
+            if (result == null || !result.Data.Any())
+                return NotFound("No users found.");
+
+            return Ok(result);
+        }
     }
 }
