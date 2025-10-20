@@ -201,6 +201,27 @@ namespace ExpensesTrackerApp.Services
             return mapper.Map<UserReadOnlyDTO>(user);
         }
 
+        public async Task<PaginatedResult<UserReadOnlyDTO>> GetAllUsersAsync(int pageNumber, int pageSize)
+        {
+            var result = await unitOfWork.UserRepository.GetUsersAsync(pageNumber, pageSize, new List<Expression<Func<User, bool>>>());
+
+            // AutoMapper will handle mapping List<User> → List<UserReadOnlyDTO>
+            var dtoData = mapper.Map<List<UserReadOnlyDTO>>(result.Data);
+
+            var dtoResult = new PaginatedResult<UserReadOnlyDTO>
+            {
+                Data = dtoData,
+                TotalRecords = result.TotalRecords,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize
+            };
+
+            logger.LogInformation("Retrieved {Count} users from page {PageNumber}", dtoResult.Data.Count, dtoResult.PageNumber);
+
+            return dtoResult;
+        }
+
+
 
 
         /// <summary>

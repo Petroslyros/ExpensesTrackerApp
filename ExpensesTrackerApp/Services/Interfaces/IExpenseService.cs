@@ -14,7 +14,7 @@ namespace ExpensesTrackerApp.Services.Interfaces
         Task<PaginatedResult<ExpenseReadOnlyDTO>> GetPaginatedUserExpensesFilteredAsync(
             int userId, int pageNumber, int pageSize, ExpenseFiltersDTO filters);
 
-        Task<ExpenseReadOnlyDTO> CreateExpenseAsync(ExpenseInsertDTO newExpense);
+        Task<ExpenseReadOnlyDTO> CreateExpenseAsync(ExpenseInsertDTO newExpense, int userId);
 
         Task<decimal> GetTotalAmountByUserAsync(int userId);
 

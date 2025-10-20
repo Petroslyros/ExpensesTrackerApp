@@ -23,42 +23,53 @@ namespace ExpensesTrackerApp.Services
         }
 
 
-        public async Task<ExpenseReadOnlyDTO> CreateExpenseAsync(ExpenseInsertDTO expenseDto)
+        public async Task<ExpenseReadOnlyDTO> CreateExpenseAsync(ExpenseInsertDTO expenseDto, int userId)
         {
-            var user = await unitOfWork.UserRepository.GetAsync(expenseDto.UserId);
+            // Validate user
+            var user = await unitOfWork.UserRepository.GetAsync(userId);
             if (user == null)
-            {
-                throw new EntityNotFoundException("ExpenseCategory", $"Category with Id {expenseDto.ExpenseCategoryId} not found");
-            }
-            var category = await unitOfWork.ExpenseCategoryRepository.GetAsync(expenseDto.ExpenseCategoryId);
+                throw new EntityNotFoundException("User", $"User with Id {userId} not found");
+
+            // Validate category name
+            if (string.IsNullOrWhiteSpace(expenseDto.CategoryName))
+                throw new Exception("Category name is required");
+
+            // Check if category exists (case-insensitive)
+            var category = await unitOfWork.ExpenseCategoryRepository
+                .GetByNameAsync(expenseDto.CategoryName.Trim());
+
             if (category == null)
             {
-                throw new EntityNotFoundException("ExpenseCategory", $"Category with ID {expenseDto.ExpenseCategoryId} not found");
+                // Create new category
+                category = new ExpenseCategory
+                {
+                    Name = expenseDto.CategoryName.Trim()
+                };
+                await unitOfWork.ExpenseCategoryRepository.AddAsync(category);
+                await unitOfWork.SaveAsync(); // save new category to get Id
             }
 
+            // Create expense linked to the category
             var expense = new Expense
             {
                 Title = expenseDto.Title,
                 Amount = expenseDto.Amount,
                 Date = expenseDto.Date,
-                UserId = expenseDto.UserId,
-                ExpenseCategoryId = expenseDto.ExpenseCategoryId
+                UserId = userId,
+                ExpenseCategoryId = category.Id
             };
+
             await unitOfWork.ExpenseRepository.AddAsync(expense);
             await unitOfWork.SaveAsync();
 
-            return new ExpenseReadOnlyDTO
-                (
-                    expense.Id,
-                    expense.Title,
-                    expense.Amount,
-                    expense.Date,
-                    new ExpenseCategoryReadOnlyDTO(category!.Id, category.Name)
-
-                );
-
-
-
+            // Return DTO
+            return new ExpenseReadOnlyDTO(
+                expense.Id,
+                expense.Title,
+                expense.Amount,
+                expense.Date,
+                new ExpenseCategoryReadOnlyDTO(category.Id, category.Name)
+            );
         }
 
         public Task<bool> DeleteExpenseAsync(int expenseId)
