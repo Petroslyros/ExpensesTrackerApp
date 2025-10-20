@@ -9,7 +9,7 @@ namespace ExpensesTrackerApp.Configuration
         public MapperConfig()
         {
             CreateMap<User, UserReadOnlyDTO>().ReverseMap();
-            // For registration map the properties that match
+            // avoids accidentally setting or overwriting sensitive or database-generated fields
             CreateMap<UserRegisterDTO, User>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Password, opt => opt.Ignore())
@@ -18,6 +18,9 @@ namespace ExpensesTrackerApp.Configuration
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             //The .ForAllMembers(...) condition ensures null fields won’t overwrite existing data if
             //they aren’t provided (useful for PATCH-like behavior).
+
+            CreateMap<ExpenseInsertDTO, Expense>();
+            CreateMap<Expense, ExpenseReadOnlyDTO>();
         }
     }
 }
