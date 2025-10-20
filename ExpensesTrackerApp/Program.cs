@@ -113,21 +113,36 @@ namespace ExpensesTrackerApp
             // Configures Swagger UI and security schemes(JWT auth support)
             builder.Services.AddSwaggerGen(options =>
             {
-
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Expense Tracker App", Version = "v1" });
-                // Non-nullable reference are properly documented
-                options.OperationFilter<AuthorizeOperationFilter>();
-                options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
-                    new OpenApiSecurityScheme
-                    {
-                        Description = "JWT Authorization Header using the Bearer scheme",
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.Http,
-                        Scheme = JwtBearerDefaults.AuthenticationScheme,
-                        BearerFormat = "JWT"
-                    });
+
+                // Define the BearerAuth scheme
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter 'Bearer' [space] and then your valid token.\r\nExample: \"Bearer eyJhbGciOiJI...\""
+                });
+
+                // Require token globally for endpoints marked with [Authorize]
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                        {
+                            {
+                                new OpenApiSecurityScheme
+                                {
+                                    Reference = new OpenApiReference
+                                    {
+                                        Type = ReferenceType.SecurityScheme,
+                                        Id = "Bearer"
+                                    }
+                                },
+                                Array.Empty<string>()
+                            }
+                        });
             });
+
 
             var app = builder.Build();
 
