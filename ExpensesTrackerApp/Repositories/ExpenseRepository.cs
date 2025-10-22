@@ -118,5 +118,10 @@ namespace ExpensesTrackerApp.Repositories
             .Include(e => e.User)                 // eager load user if needed
             .ToListAsync();                        // execute query
         }
+
+        public async Task<bool> IsCategoryUsedAsync(int categoryId)
+        {
+            return await context.Expenses.AnyAsync(e => e.ExpenseCategoryId == categoryId);
+        }
     }
 }

@@ -22,6 +22,8 @@ namespace ExpensesTrackerApp.Repositories
 
         public ExpenseCategoryRepository ExpenseCategoryRepository => new(_context);
 
+        public BudgetRepository BudgetRepository => new(_context);
+
         //for commit and rolback
         public async Task<bool> SaveAsync()
         {

@@ -6,6 +6,8 @@
         ExpenseRepository ExpenseRepository { get; }
         ExpenseCategoryRepository ExpenseCategoryRepository { get; }
 
+        BudgetRepository BudgetRepository { get; }
+
         Task<bool> SaveAsync();
     }
 }

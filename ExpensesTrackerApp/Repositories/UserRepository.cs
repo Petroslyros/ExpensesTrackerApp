@@ -32,7 +32,7 @@ namespace ExpensesTrackerApp.Repositories
         public async Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize,
             List<Expression<Func<User, bool>>> predicates)
         {
-            IQueryable<User> query = context.Users; // δεν εκτελείται
+            IQueryable<User> query = context.Users.Where(u => !u.isDeleted);// δεν εκτελείται
 
             if (predicates != null && predicates.Count > 0)
             {
@@ -90,6 +90,11 @@ namespace ExpensesTrackerApp.Repositories
             context.Entry(user).State = EntityState.Modified;  // Marks the UserProfile entity as modified
 
             return existingUser;
+        }
+
+        public override async Task<IEnumerable<User>> GetAllAsync()
+        {
+            return await dbSet.Where(u => !u.isDeleted).ToListAsync();
         }
 
 
