@@ -20,6 +20,6 @@ namespace ExpensesTrackerApp.Services
 
         public ExpenseCategoryService ExpenseCategoryService => new(unitOfWork, mapper);
 
-
+        public BudgetService BudgetService => new(unitOfWork, mapper);
     }
 }

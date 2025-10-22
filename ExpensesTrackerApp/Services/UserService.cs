@@ -159,14 +159,18 @@ namespace ExpensesTrackerApp.Services
 
         public async Task<bool> DeleteUserAsync(int id)
         {
+            // Get the user
             var user = await unitOfWork.UserRepository.GetAsync(id);
             if (user == null) throw new EntityNotFoundException("User", $"User with ID {id} not found");
 
-            bool deleted = await unitOfWork.UserRepository.DeleteAsync(id);
+            // Soft delete: mark as deleted
+            user.isDeleted = true;
+            user.DeletedAt = DateTime.UtcNow;
 
+            // Save changes
             await unitOfWork.SaveAsync();
 
-            logger.LogInformation("User deleted successffuly with ID {UserId}", id);
+            logger.LogInformation("User soft-deleted successfully with ID {UserId}", id);
 
             return true;
         }

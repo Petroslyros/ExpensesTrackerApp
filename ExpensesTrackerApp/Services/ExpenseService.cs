@@ -22,7 +22,14 @@ namespace ExpensesTrackerApp.Services
             this.mapper = mapper;
         }
 
-
+        /// <summary>
+        /// Creates a new expense for the given user, automatically creating the category if it doesn't exist.
+        /// </summary>
+        /// <param name="expenseDto">Expense details including title, amount, date, and category name.</param>
+        /// <param name="userId">The ID of the user creating the expense.</param>
+        /// <returns>A DTO containing the created expense and its category.</returns>
+        /// <exception cref="EntityNotFoundException">Thrown if the user does not exist.</exception>
+        /// <exception cref="Exception">Thrown if the category name is missing or invalid.</exception>
         public async Task<ExpenseReadOnlyDTO> CreateExpenseAsync(ExpenseInsertDTO expenseDto, int userId)
         {
             // Validate user
@@ -32,15 +39,15 @@ namespace ExpensesTrackerApp.Services
 
             // Validate category name
             if (string.IsNullOrWhiteSpace(expenseDto.CategoryName))
-                throw new Exception("Category name is required");
+                throw new InvalidArgumentException("Category", "Category name is required");
 
-            // Check if category exists (case-insensitive)
+            // Check if Category Entity exists inside the db
             var category = await unitOfWork.ExpenseCategoryRepository
                 .GetByNameAsync(expenseDto.CategoryName.Trim());
 
             if (category == null)
             {
-                // Create new category
+                // Create new category with .Trim() so we wont have duplicates with whitespaces inside the DB
                 category = new ExpenseCategory
                 {
                     Name = expenseDto.CategoryName.Trim()
@@ -62,19 +69,64 @@ namespace ExpensesTrackerApp.Services
             await unitOfWork.ExpenseRepository.AddAsync(expense);
             await unitOfWork.SaveAsync();
 
+            logger.LogInformation("Expense created successfully for user {UserId} in category {CategoryId}", userId, category.Id);
+
+
             // Return DTO
-            return new ExpenseReadOnlyDTO(
-                expense.Id,
-                expense.Title,
-                expense.Amount,
-                expense.Date,
-                new ExpenseCategoryReadOnlyDTO(category.Id, category.Name)
-            );
+            return mapper.Map<ExpenseReadOnlyDTO>(expense);
         }
 
-        public Task<bool> DeleteExpenseAsync(int expenseId)
+        /// <summary>
+        /// Deletes an expense belonging to the specified user. 
+        /// Also removes the category if it is no longer used by any expenses.
+        /// </summary>
+        /// <param name="expenseId">The ID of the expense to delete.</param>
+        /// <param name="userId">The ID of the user performing the deletion.</param>
+        /// <exception cref="EntityNotFoundException">Thrown if the expense does not exist.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the expense belongs to another user.</exception>
+        /// <exception cref="Exception">Thrown if the deletion fails.</exception>
+        public async Task DeleteExpenseAsync(int expenseId, int userId)
         {
-            throw new NotImplementedException();
+            //  Get the expense
+            var expense = await unitOfWork.ExpenseRepository.GetAsync(expenseId);
+            if (expense == null)
+            {
+                logger.LogWarning("Expense with Id {ExpenseId} not found", expenseId);
+                throw new EntityNotFoundException("Expense", $"Expense with Id {expenseId} not found");
+            }
+
+            if (expense.UserId != userId)
+            {
+                logger.LogWarning("The expense {ExpenseId} that doesn't belong to the user with {UserId}", expenseId, userId);
+                throw new EntityNotAuthorizedException("Expense", "You cannot delete another user's expense");
+            }
+
+            int? categoryId = expense.ExpenseCategoryId;
+
+            bool deleted = await unitOfWork.ExpenseRepository.DeleteAsync(expenseId);
+            if (!deleted)
+                throw new ServerException("ExpenseDeleteFailed", $"Failed to delete expense with Id {expenseId}");
+
+
+            await unitOfWork.SaveAsync();
+            logger.LogInformation("Expense {ExpenseId} deleted successfully by user {UserId}", expenseId, userId);
+
+            // Check if the category is still used
+            if (categoryId != null)
+            {
+                var isCategoryUsed = await unitOfWork.ExpenseRepository.IsCategoryUsedAsync(categoryId.Value);
+                if (!isCategoryUsed)
+                {
+                    bool categoryDeleted = await unitOfWork.ExpenseCategoryRepository.DeleteAsync(categoryId.Value);
+                    if (categoryDeleted)
+                    {
+                        await unitOfWork.SaveAsync();
+                        logger.LogInformation("Category {CategoryId} deleted because it was unused", categoryId);
+                    }
+                }
+            }
+
+
         }
 
         public Task<ExpenseReadOnlyDTO?> GetByTitleAsync(string title)
@@ -82,9 +134,19 @@ namespace ExpensesTrackerApp.Services
             throw new NotImplementedException();
         }
 
-        public Task<ExpenseReadOnlyDTO?> GetExpenseByIdAsync(int expenseId)
+        public async Task<ExpenseReadOnlyDTO?> GetExpenseByIdAsync(int expenseId)
         {
-            throw new NotImplementedException();
+            Expense? expense = null;
+            try
+            {
+                expense = await unitOfWork.ExpenseRepository.GetAsync(expenseId);
+                logger.LogInformation("Expense found with ID : {Id}", expenseId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error retreiving expese with ID : {Id}. {Message}", expenseId, ex.Message);
+            }
+            return mapper.Map<ExpenseReadOnlyDTO>(expense);
         }
 
         public Task<List<ExpenseReadOnlyDTO>> GetExpensesByCategoryAsync(int userId, int categoryId)
