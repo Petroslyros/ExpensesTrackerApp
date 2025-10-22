@@ -20,7 +20,13 @@ namespace ExpensesTrackerApp.Configuration
             //they aren’t provided (useful for PATCH-like behavior).
 
             CreateMap<ExpenseInsertDTO, Expense>();
-            CreateMap<Expense, ExpenseReadOnlyDTO>();
+            CreateMap<Expense, ExpenseReadOnlyDTO>()
+                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.ExpenseCategory));
+            CreateMap<ExpenseCategory, ExpenseCategoryReadOnlyDTO>();
+
+            CreateMap<BudgetInsertDTO, Budget>();
+            CreateMap<Budget, BudgetReadOnlyDTO>();
+
         }
     }
 }
