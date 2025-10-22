@@ -26,6 +26,6 @@ namespace ExpensesTrackerApp.Services.Interfaces
 
         Task<bool> UpdateExpenseAsync(ExpenseInsertDTO expense);
 
-        Task<bool> DeleteExpenseAsync(int expenseId);
+        Task DeleteExpenseAsync(int expenseId, int userId);
     }
 }
