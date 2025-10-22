@@ -15,6 +15,8 @@ namespace ExpensesTrackerApp.Data
         //navigation key
         public virtual ICollection<Expense> Expenses { get; set; } = new HashSet<Expense>();
 
+        public virtual ICollection<Budget> Budgets { get; set; } = new HashSet<Budget>();
+
 
     }
 }

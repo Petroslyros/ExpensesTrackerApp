@@ -9,6 +9,8 @@ namespace ExpensesTrackerApp.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Expense> Expenses { get; set; } = null!;
         public DbSet<ExpenseCategory> ExpenseCategories { get; set; } = null!;
+        public DbSet<Budget> Budgets { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -90,6 +92,50 @@ namespace ExpensesTrackerApp.Data
 
                 entity.HasIndex(e => e.Name, "IX_ExpenseCategories_Name").IsUnique();
             });
+
+            modelBuilder.Entity<Budget>(entity =>
+            {
+                entity.ToTable("Budgets");
+                entity.HasKey(b => b.Id);
+
+                entity.Property(b => b.LimitAmount)
+                      .HasColumnType("decimal(10,2)")
+                      .IsRequired();
+
+                entity.Property(b => b.SpentAmount)
+                      .HasColumnType("decimal(10,2)");
+
+                entity.Property(b => b.StartDate)
+                        .IsRequired();
+
+                entity.Property(b => b.EndDate)
+                      .IsRequired();
+
+                // User relationship
+                entity.HasOne(b => b.User)
+                      .WithMany(u => u.Budgets)
+                      .HasForeignKey(b => b.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Category relationship
+                entity.HasOne(b => b.Category)
+                      .WithMany()
+                      .HasForeignKey(b => b.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Ensure one budget per user per category
+                entity.HasIndex(b => new { b.UserId, b.CategoryId }).IsUnique();
+
+                entity.Property(b => b.InsertedAt)
+                      .ValueGeneratedOnAdd()
+                      .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.Property(b => b.ModifiedAt)
+                      .ValueGeneratedOnAddOrUpdate()
+                      .HasDefaultValueSql("GETUTCDATE()");
+            });
+
+
         }
     }
 }
