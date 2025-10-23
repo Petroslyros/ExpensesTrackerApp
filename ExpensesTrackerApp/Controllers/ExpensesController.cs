@@ -1,4 +1,5 @@
 ﻿using ExpensesTrackerApp.DTO;
+using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,7 +61,60 @@ namespace ExpensesTrackerApp.Controllers
             return Ok(new { message = "Expense deleted successfully." });
         }
 
+        [HttpGet("{categoryId}")]
+        [Authorize]
+        public async Task<ActionResult<List<ExpenseReadOnlyDTO>>> GetExpensesByCategory(int categoryId)
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in.");
 
+            var expenses = await applicationService.ExpenseService
+                .GetExpensesByCategoryAsync(AppUser.Id, categoryId);
+
+            return Ok(expenses);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<PaginatedResult<ExpenseReadOnlyDTO>>> GetPaginatedUserExpenses(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in.");
+
+            var result = await applicationService.ExpenseService
+                .GetPaginatedUserExpensesAsync(AppUser.Id, pageNumber, pageSize);
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<decimal>> GetTotalAmount()
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in.");
+
+            var total = await applicationService.ExpenseService.GetTotalAmountByUserAsync(AppUser.Id);
+            return Ok(total);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateExpense(int id, [FromBody] ExpenseInsertDTO expenseDto)
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in.");
+
+            var updatedExpense = await applicationService.ExpenseService
+                                    .UpdateExpenseAsync(AppUser.Id, id, expenseDto);
+            return Ok(new
+            {
+                Message = "Expense updated successfully!",
+                Expense = updatedExpense
+            });
+        }
 
 
     }
