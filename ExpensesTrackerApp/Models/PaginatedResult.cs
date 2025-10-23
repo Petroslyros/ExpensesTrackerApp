@@ -10,10 +10,10 @@
 
         public PaginatedResult() { }
 
-        public PaginatedResult(List<T> data, int totalRecrods, int pageNumber, int pageSize)
+        public PaginatedResult(List<T> data, int totalRecords, int pageNumber, int pageSize)
         {
             Data = data;
-            TotalRecords = totalRecrods;
+            TotalRecords = totalRecords;
             PageNumber = pageNumber;
             PageSize = pageSize;
         }
