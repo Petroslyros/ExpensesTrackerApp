@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ExpensesTrackerApp.Core.Filters;
 using ExpensesTrackerApp.Data;
 using ExpensesTrackerApp.DTO;
 using ExpensesTrackerApp.Exceptions;
@@ -149,34 +148,120 @@ namespace ExpensesTrackerApp.Services
             return mapper.Map<ExpenseReadOnlyDTO>(expense);
         }
 
-        public Task<List<ExpenseReadOnlyDTO>> GetExpensesByCategoryAsync(int userId, int categoryId)
+        public async Task<List<ExpenseReadOnlyDTO>> GetExpensesByCategoryAsync(int userId, int categoryId)
         {
-            throw new NotImplementedException();
+            // validate user exists
+            var user = await unitOfWork.UserRepository.GetAsync(userId);
+            if (user == null)
+                throw new EntityNotFoundException("User", $"User with Id {userId} not found");
+
+            // validate category exists
+            var category = await unitOfWork.ExpenseCategoryRepository.GetAsync(categoryId);
+            if (category == null)
+                throw new EntityNotFoundException("ExpenseCategory", $"Category with Id {categoryId} not found");
+
+            // Get all expenses from repository
+            var expenses = await unitOfWork.ExpenseRepository
+                .GetExpensesByCategoryAsync(userId, categoryId);
+
+            // Map to DTOs
+            var expenseDtos = mapper.Map<List<ExpenseReadOnlyDTO>>(expenses);
+
+            // Fill category names
+            foreach (var dto in expenseDtos)
+                dto.Category = new ExpenseCategoryReadOnlyDTO { Id = category.Id, Name = category.Name };
+
+            return expenseDtos;
         }
 
-        public Task<PaginatedResult<ExpenseReadOnlyDTO>> GetPaginatedUserExpensesAsync(int userId, int pageNumber, int pageSize)
+        public async Task<PaginatedResult<ExpenseReadOnlyDTO>> GetPaginatedUserExpensesAsync(int userId, int pageNumber, int pageSize)
         {
-            throw new NotImplementedException();
+            //  validate user exists
+            var user = await unitOfWork.UserRepository.GetAsync(userId);
+            if (user == null)
+                throw new EntityNotFoundException("User", $"User with Id {userId} not found");
+
+            //paginated data
+            var expenses = await unitOfWork.ExpenseRepository.GetPaginatedExpensesByUserAsync(userId, pageNumber, pageSize);
+
+            //total count
+            var totalCount = await unitOfWork.ExpenseRepository.GetCountByUserAsync(userId);
+
+            var expenseDtos = mapper.Map<List<ExpenseReadOnlyDTO>>(expenses);
+
+            //populate category info
+            foreach (var dto in expenseDtos)
+            {
+                var category = expenses.FirstOrDefault(e => e.Id == dto.Id)?.ExpenseCategory;
+                if (category != null)
+                    dto.Category = new ExpenseCategoryReadOnlyDTO
+                    {
+                        Id = category.Id,
+                        Name = category.Name
+                    };
+            }
+
+            // Return paginated result
+            return new PaginatedResult<ExpenseReadOnlyDTO>(
+                data: expenseDtos,
+                totalRecords: totalCount,
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            );
+
         }
 
-        public Task<PaginatedResult<ExpenseReadOnlyDTO>> GetPaginatedUserExpensesFilteredAsync(int userId, int pageNumber, int pageSize, ExpenseFiltersDTO filters)
+
+        public async Task<decimal> GetTotalAmountByUserAsync(int userId)
         {
-            throw new NotImplementedException();
+            var user = await unitOfWork.UserRepository.GetAsync(userId);
+            if (user == null)
+                throw new EntityNotFoundException("User", $"User with Id {userId} not found");
+
+            // Get total amount
+            var totalAmount = await unitOfWork.ExpenseRepository.GetTotalAmountByUserAsync(userId);
+            return totalAmount;
         }
 
-        public Task<decimal> GetTotalAmountByUserAsync(int userId)
+        public async Task<ExpenseReadOnlyDTO> UpdateExpenseAsync(int userId, int expenseId, ExpenseInsertDTO expenseDto)
         {
-            throw new NotImplementedException();
-        }
+            //  find existing expense
+            var existingExpense = await unitOfWork.ExpenseRepository.GetAsync(expenseId);
+            if (existingExpense == null)
+                throw new EntityNotFoundException("Expense", $"Expense with Id {expenseId} not found");
 
-        public Task<List<ExpenseReadOnlyDTO>> GetUserExpensesAsync(int userId)
-        {
-            throw new NotImplementedException();
-        }
+            // validate user ownership
+            if (existingExpense.UserId != userId)
+                throw new UnauthorizedAccessException("You can only update your own expenses.");
 
-        public Task<bool> UpdateExpenseAsync(ExpenseInsertDTO expense)
-        {
-            throw new NotImplementedException();
+            // category check
+            if (string.IsNullOrWhiteSpace(expenseDto.CategoryName))
+                throw new InvalidArgumentException("Category", "Category name is required");
+
+            var category = await unitOfWork.ExpenseCategoryRepository.GetByNameAsync(expenseDto.CategoryName.Trim());
+            if (category == null)
+            {
+                category = new ExpenseCategory
+                {
+                    Name = expenseDto.CategoryName.Trim()
+                };
+                await unitOfWork.ExpenseCategoryRepository.AddAsync(category);
+                await unitOfWork.SaveAsync(); // save to get new category Id
+            }
+
+            // Update expense fields
+            existingExpense.Title = expenseDto.Title;
+            existingExpense.Amount = expenseDto.Amount;
+            existingExpense.Date = expenseDto.Date;
+            existingExpense.ExpenseCategoryId = category.Id;
+
+            await unitOfWork.ExpenseRepository.UpdateAsync(existingExpense);
+            await unitOfWork.SaveAsync();
+
+            var updatedExpenseDto = mapper.Map<ExpenseReadOnlyDTO>(existingExpense);
+            updatedExpenseDto.Category = mapper.Map<ExpenseCategoryReadOnlyDTO>(category);
+            return updatedExpenseDto;
+
         }
     }
 }
