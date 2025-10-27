@@ -91,13 +91,6 @@ namespace ExpensesTrackerApp
 
 
 
-            //builder.Services.AddControllers().AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            //    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            //});
-
-
             // Registers controller support for MVC - style routing.
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
             {

@@ -57,9 +57,21 @@ namespace ExpensesTrackerApp.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<BudgetReadOnlyDTO>> GetBudgetsByUserAsync(int userId)
+        public async Task<IEnumerable<BudgetReadOnlyDTO>> GetBudgetsByUserAsync(int userId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var budgets = await unitOfWork.BudgetRepository.GetBudgetsByUserAsync(userId);
+                var result = mapper.Map<IEnumerable<BudgetReadOnlyDTO>>(budgets);
+
+                logger.LogInformation("Retrieved {Count} budgets for user {UserId}", result.Count(), userId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error retrieving budgets for user {UserId}. {Message}", userId, ex.Message);
+                throw;
+            }
         }
 
         public async Task<BudgetReadOnlyDTO?> GetBudgetByIdAsync(int budgetId)
@@ -75,6 +87,25 @@ namespace ExpensesTrackerApp.Services
                 logger.LogError("Error retreiving Budget with ID : {Id}. {Message}", budgetId, ex.Message);
             }
             return mapper.Map<BudgetReadOnlyDTO>(budget);
+        }
+
+        public async Task DeleteBudgetAsync(int budgetId, int userId)
+        {
+
+            var budget = await unitOfWork.BudgetRepository.GetAsync(budgetId);
+
+            if (budget == null)
+                throw new EntityNotFoundException("Budget", $"Budget with ID {budgetId} not found");
+
+            // Verify ownership
+            if (budget.UserId != userId)
+                throw new EntityNotAuthorizedException("Budget", "You don't have permission to delete this budget");
+
+            // Delete
+            await unitOfWork.BudgetRepository.DeleteAsync(budgetId);
+            await unitOfWork.SaveAsync();
+
+            logger.LogInformation("Budget deleted successfully: {BudgetId}", budgetId);
         }
     }
 }

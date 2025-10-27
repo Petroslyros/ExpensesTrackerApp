@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExpensesTrackerApp.Controllers
 {
+    //[Route("api/[controller]")]
+    //[ApiController]
     public class ExpensesController : BaseController
     {
         private readonly IConfiguration configuration;
@@ -47,17 +49,15 @@ namespace ExpensesTrackerApp.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize] // Requires authentication
+        [Authorize]
         public async Task<IActionResult> DeleteExpense(int id)
         {
             // Checks if user info exists in the controller (token decoded)
             if (AppUser == null)
                 return Unauthorized("User must be logged in to delete an expense.");
 
-            // Calls service to delete the expense (handles ownership & validation internally)
             await applicationService.ExpenseService.DeleteExpenseAsync(id, AppUser.Id);
 
-            //200
             return Ok(new { message = "Expense deleted successfully." });
         }
 

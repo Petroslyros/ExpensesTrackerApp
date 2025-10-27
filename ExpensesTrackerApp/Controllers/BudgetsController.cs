@@ -41,5 +41,27 @@ namespace ExpensesTrackerApp.Controllers
 
         }
 
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteBudget(int id)
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in to delete a budget.");
+
+            await applicationService.BudgetService.DeleteBudgetAsync(id, AppUser.Id);
+            return Ok(new { message = "Budget deleted successfully." });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<BudgetReadOnlyDTO>>> GetUserBudgets()
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in.");
+
+            var budgets = await applicationService.BudgetService.GetBudgetsByUserAsync(AppUser.Id);
+            return Ok(budgets);
+        }
+
     }
 }
