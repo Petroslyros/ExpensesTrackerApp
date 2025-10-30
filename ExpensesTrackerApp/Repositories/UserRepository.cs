@@ -1,7 +1,7 @@
-﻿using ExpensesTrackerApp.Data;
+﻿using ExpensesTrackerApp.Core.Security;
+using ExpensesTrackerApp.Data;
 using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Repositories.Interfaces;
-using ExpensesTrackerApp.Security;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 

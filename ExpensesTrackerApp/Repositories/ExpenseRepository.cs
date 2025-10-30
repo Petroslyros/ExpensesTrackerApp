@@ -9,11 +9,11 @@ namespace ExpensesTrackerApp.Repositories
         public ExpenseRepository(ExpenseAppDbContext context) : base(context) { }
 
 
-        public async Task<Expense?> GetByTitleAsync(string? title)
+        public async Task<Expense?> GetByTitleAsync(string? title) // nullability here forces the caller to handle it properly
         {
             return await context.Expenses
                 .Where(e => e.Title == title)
-                .FirstOrDefaultAsync(); //fetched zero or one
+                .FirstOrDefaultAsync(); //fetched zero or one , or can return null
         }
 
         public async Task<Expense?> GetExpenseByIdAsync(int expenseId)

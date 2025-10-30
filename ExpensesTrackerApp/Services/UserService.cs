@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using ExpensesTrackerApp.Core.Enums;
 using ExpensesTrackerApp.Core.Filters;
+using ExpensesTrackerApp.Core.Security;
 using ExpensesTrackerApp.Data;
 using ExpensesTrackerApp.DTO;
 using ExpensesTrackerApp.Exceptions;
 using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Repositories.Interfaces;
-using ExpensesTrackerApp.Security;
 using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;

@@ -1,4 +1,4 @@
-﻿namespace ExpensesTrackerApp.Security
+﻿namespace ExpensesTrackerApp.Core.Security
 {
     public static class EncryptionUtil //Utility class
     {
