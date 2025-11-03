@@ -49,7 +49,7 @@ A full-stack web application for tracking personal expenses. The backend is buil
 - SQL Server 2019+ (SQL Server Express) - **Download from:** https://www.microsoft.com/en-us/sql-server/sql-server-express
 - SQL Server Management Studio (SSMS) - optional but recommended for managing databases
 - Visual Studio or VS Code
-- Entity Framework Core CLI (install with: `dotnet tool install --global dotnet-ef --version 9.0.10`)
+- Entity Framework Core CLI (install with: `dotnet tool install --global dotnet-ef`)
 
 ### **Clone & Install**
 
