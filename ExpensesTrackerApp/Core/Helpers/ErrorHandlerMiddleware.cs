@@ -6,7 +6,10 @@ using System.Net;
 namespace ExpensesTrackerApp.Core.Helpers
 {
     /// <summary>
-    /// This middleware is used to catch authorization failures that the global exception handler would miss..
+    /// The ErrorHandlerMiddleware is a global exception handler that catches unhandled exceptions
+    /// from the entire request pipeline. 
+    /// It converts custom business exceptions into appropriate HTTP status codes and 
+    /// returns a consistent JSON error response to the client
     /// </summary>
     /// <remarks>You can also use this error handler if for some reason the GlobalExceptionHandler doesnt work.</remarks>
     public class ErrorHandlerMiddleware
