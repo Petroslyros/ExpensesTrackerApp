@@ -1,11 +1,14 @@
-# **Expense Tracker Application** 💰
+# **Expense Tracker Application** 
 
 A full-stack web application for tracking personal expenses. The backend is built with **ASP.NET Core 8** and the frontend with **React 19**, communicating via REST API with **JWT-based authentication**.
+
+**📌 Note:** Backend and Frontend are in separate repositories.
 
 ---
 
 ## **Table of Contents**
 - [Architecture](#architecture)
+- [Repository Links](#repository-links)
 - [Backend Setup](#backend-setup)
 - [Frontend Setup](#frontend-setup)
 - [Running Locally](#running-locally)
@@ -32,37 +35,75 @@ A full-stack web application for tracking personal expenses. The backend is buil
 
 ---
 
+## **Repository Links**
+
+- **Backend Repository:** [expense-tracker-api](https://github.com/YOUR_USERNAME/expense-tracker-api)
+- **Frontend Repository:** [expense-tracker-web](https://github.com/YOUR_USERNAME/expense-tracker-web)
+
+---
+
 ## **Backend Setup**
 
 ### **Prerequisites**
 - .NET 8.0 SDK or higher
-- SQL Server 2019+ (SQL Server Express)
+- SQL Server 2019+ (SQL Server Express) - **Download from:** https://www.microsoft.com/en-us/sql-server/sql-server-express
+- SQL Server Management Studio (SSMS) - optional but recommended for managing databases
 - Visual Studio or VS Code
+- Entity Framework Core CLI (install with: `dotnet tool install --global dotnet-ef`)
+
+### **Clone & Install**
+
+```bash
+git clone https://github.com/YOUR_USERNAME/expense-tracker-api.git
+cd expense-tracker-api
+```
 
 ### **Environment Variables**
 
-Your sensitive data is managed via **Windows environment variables**:
+All sensitive data is managed via **Windows environment variables**. Set these before running the backend:
 
 ```
-DB_PASS        → Your SQL Server password
+DB_HOST        → Database host (e.g., localhost)
+DB_PORT        → Database port (e.g., SQLEXPRESS)
+DB_NAME        → Database name (e.g., ExpensesDbApi)
+DB_USER        → Database user (e.g., Petros)
+DB_PASS        → Database password
 JWT_SECRET     → Secret key for signing JWT tokens (32+ chars)
 ```
 
-These are referenced in `appsettings.json` as `{DB_PASS}` and `{JWT_SECRET}` and substituted at runtime in `Program.cs`:
+**Set them using Command Prompt as Administrator:**
 
-```csharp
-var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-connString = connString!.Replace("{DB_PASS}", Environment.GetEnvironmentVariable("DB_PASS") ?? "");
+```bash
+setx DB_HOST "localhost"
+setx DB_PORT "SQLEXPRESS"
+setx DB_NAME "ExpensesDbApi"
+setx DB_USER "Petros"
+setx DB_PASS "your_sql_server_password"
+setx JWT_SECRET "your_jwt_secret_key"
 ```
+
+**Restart Visual Studio** after setting these variables.
 
 ### **Installation**
 
-```bash
-cd ExpensesTrackerApp
-dotnet restore
-dotnet ef database update
-dotnet run
-```
+1. **Install Entity Framework Core CLI (one-time setup):**
+   ```bash
+   dotnet tool install --global dotnet-ef --version 9.0.10
+   ```
+
+2. **Restore packages and create database:**
+   ```bash
+   dotnet restore
+   dotnet ef database update
+   dotnet run
+   ```
+
+If `dotnet ef database update` fails, manually create the database in SQL Server Management Studio:
+- Open **SQL Server Management Studio**
+- Right-click **Databases** → **New Database**
+- Name it `ExpensesDbApi` (or your `DB_NAME` env var)
+- Click OK
+- Then run `dotnet ef database update` again
 
 API runs on `https://localhost:5001` | Swagger UI at `/swagger`
 
@@ -86,18 +127,24 @@ API runs on `https://localhost:5001` | Swagger UI at `/swagger`
 - Node.js 18+ and npm
 - Modern web browser
 
-### **Installation**
+### **Clone & Install**
 
 ```bash
-cd frontend
+git clone https://github.com/YOUR_USERNAME/expense-tracker-web.git
+cd expense-tracker-web
 npm install
 ```
 
-Create `.env.local` in frontend root:
+### **Environment Configuration**
+
+Create `.env.local` in the project root:
+
 ```env
 VITE_API_URL=https://localhost:5001
 VITE_API_TIMEOUT=30000
 ```
+
+### **Running the App**
 
 ```bash
 npm run dev
@@ -124,15 +171,24 @@ App runs on `http://localhost:5173`
 ## **Running Locally**
 
 ### **Terminal 1 - Backend**
+
 ```bash
-cd ExpensesTrackerApp
+cd expense-tracker-api
+
+# One-time setup (if not done before)
+dotnet tool install --global dotnet-ef --version 9.0.10
+
+dotnet restore
+dotnet ef database update
 dotnet run
 # Runs on https://localhost:5001
 ```
 
 ### **Terminal 2 - Frontend**
+
 ```bash
-cd frontend
+cd expense-tracker-web
+npm install
 npm run dev
 # Runs on http://localhost:5173
 ```
@@ -191,11 +247,14 @@ npm run dev
 
 | Issue | Solution |
 |-------|----------|
-| **Environment variables not found** | Restart VS/Terminal after setting Windows env vars |
-| **JWT Token Invalid** | Verify `JWT_SECRET` env var is set correctly |
-| **CORS Errors** | Check `AddCors()` in `Program.cs` allows `http://localhost:5173` |
-| **DB Connection Failed** | Verify SQL Server is running; check `DB_PASS` env var |
-| **Vite Port Taken** | Run `npm run dev -- --port 3000` |
-| **Migrations Won't Apply** | Ensure SQL Server user has `db_owner` role |
+| **SQL Server not installed** | Download SQL Server Express from https://www.microsoft.com/en-us/sql-server/sql-server-express and install it |
+| **SQL Server not running** | Start SQL Server from Windows Services (search "Services" in Windows) or SQL Server Configuration Manager |
+| **Environment variables not found** | Run setx commands as Administrator, then restart Visual Studio |
+| **DB Connection Failed** | Verify SQL Server is running; check all DB environment variables (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS) |
+| **Database doesn't exist** | Manually create the database in SQL Server Management Studio with the name from DB_NAME env var, then run dotnet ef database update |
+| **JWT Token Invalid** | Verify JWT_SECRET env var is set correctly and is 32+ characters |
+| **CORS Errors** | Check AddCors() in Program.cs allows http://localhost:5173 |
+| **Vite Port Taken** | Run npm run dev -- --port 3000 |
+| **Migrations Won't Apply** | Ensure SQL Server user has db_owner role; verify database exists in SQL Server |
+| **"Cannot connect to database"** | Verify SQL Server instance name matches DB_PORT env var (usually SQLEXPRESS for local installs) |
 
----
