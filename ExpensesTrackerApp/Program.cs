@@ -22,10 +22,10 @@ namespace ExpensesTrackerApp
             var builder = WebApplication.CreateBuilder(args);
 
             // Get all environment variables
-            var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-            var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "SQLEXPRESS";
-            var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "ExpensesDbApi";
-            var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "Petros";
+            var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+            var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+            var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+            var dbUser = Environment.GetEnvironmentVariable("DB_USER");
             var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
 
