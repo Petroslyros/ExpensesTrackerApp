@@ -15,10 +15,10 @@ namespace ExpensesTrackerApp.Controllers
     [ApiController]
     public class BaseController : ControllerBase
     {
-        // Provides access to all services in one place (UserService, ExpenseService, etc.)
+        // Provides access to all services in one place 
         public readonly IApplicationService applicationService;
 
-        // Optional: AutoMapper for mapping entities to DTOs
+        //AutoMapper for mapping entities to DTOs
         protected readonly IMapper mapper;
 
         public BaseController(IApplicationService applicationService)
