@@ -11,7 +11,7 @@ namespace ExpensesTrackerApp.Controllers
     public class ExpensesController : BaseController
     {
         private readonly IConfiguration configuration;
-        // IConfiguration (used for reading settings if needed)
+        // IConfiguration (used for reading settings if needed from apsettings.json)
 
         public ExpensesController(IApplicationService applicationService, IConfiguration configuration) :
             base(applicationService)
