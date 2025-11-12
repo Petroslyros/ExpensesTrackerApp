@@ -25,8 +25,13 @@ namespace ExpensesTrackerApp.Repositories
             return user;
         }
 
-        public async Task<User?> GetUserByUsernameAsync(string username) =>
-            await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        public async Task<List<User>> SearchByUsernameAsync(string searchTerm)
+        {
+            return await context.Users
+                .Where(u => u.Username.ToLower().Contains(searchTerm.ToLower()))
+                .OrderBy(u => u.Username)
+                .ToListAsync();
+        }
 
 
         public async Task<PaginatedResult<User>> GetUsersAsync(int pageNumber, int pageSize,

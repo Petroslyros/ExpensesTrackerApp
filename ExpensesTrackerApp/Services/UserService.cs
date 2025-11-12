@@ -89,30 +89,14 @@ namespace ExpensesTrackerApp.Services
 
         public async Task<UserReadOnlyDTO?> GetUserByUsernameAsync(string username)
         {
-            try
+            var user = await unitOfWork.UserRepository.SearchByUsernameAsync(username);
+            if (user == null)
             {
-                User? user = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
-                if (user == null)
-                {
-                    throw new EntityNotFoundException("User", "User with username: " + " not found");
-                }
-                logger.LogInformation("User found {Username}", username);
-                return new UserReadOnlyDTO
-                {
-                    Id = user.Id,
-                    Username = username,
-                    Email = user.Email,
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname,
-                    UserRole = user.UserRole.ToString()!
-                };
+                throw new EntityNotFoundException("User", $"User with username: {username} not found");
+            }
 
-            }
-            catch (EntityNotFoundException ex)
-            {
-                logger.LogError("Error retrieving user by username : {Username}. {Message}", username, ex.Message);
-                throw;
-            }
+            logger.LogInformation("User found {Username}", username);
+            return mapper.Map<UserReadOnlyDTO>(user);
         }
 
         public async Task<User?> VerifyAndGetUserAsync(UserLoginDTO credentials)

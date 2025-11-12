@@ -81,16 +81,15 @@ namespace ExpensesTrackerApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<UserReadOnlyDTO>> GetByUsername([FromQuery] string username)
+        public async Task<ActionResult<IEnumerable<UserReadOnlyDTO>>> SearchUsers(
+            [FromQuery] string query)
         {
-            if (AppUser?.Username != username && !User.IsInRole("Admin"))
-                throw new EntityForbiddenException("User", "You can only access your own profile.");
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest(new { message = "Search query cannot be empty" });
 
-            // Service already returns UserReadOnlyDTO
-            var userDto = await applicationService.UserService.GetUserByUsernameAsync(username)
-                          ?? throw new EntityNotFoundException("User", $"User: {username} not found");
+            var results = await applicationService.UserService.GetUserByUsernameAsync(query);
 
-            return Ok(userDto);
+            return Ok(results);
         }
 
         [HttpGet]
