@@ -79,5 +79,17 @@ namespace ExpensesTrackerApp.Repositories
         {
             return await context.Expenses.AnyAsync(e => e.ExpenseCategoryId == categoryId);
         }
+
+        //search expense by title
+        public async Task<List<Expense>> SearchByTitleAsync(int userId, string searchTerm)
+        {
+            return await dbSet
+                .Where(e => e.UserId == userId && e.Title.Contains(searchTerm))
+                .Include(e => e.ExpenseCategory)
+                .OrderByDescending(e => e.Date)
+                .ToListAsync();
+        }
+
+
     }
 }

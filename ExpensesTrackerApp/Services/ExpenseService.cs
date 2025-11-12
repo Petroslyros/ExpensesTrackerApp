@@ -263,5 +263,28 @@ namespace ExpensesTrackerApp.Services
             return updatedExpenseDto;
 
         }
+
+
+        public async Task<IEnumerable<ExpenseReadOnlyDTO>> SearchExpenseAsync(int userId, string searchTerm)
+        {
+            try
+            {
+                var user = await unitOfWork.UserRepository.GetAsync(userId)
+                    ?? throw new EntityNotFoundException("User", $"User {userId} was not found");
+
+                var expenses = await unitOfWork.ExpenseRepository.SearchByTitleAsync(userId, searchTerm);
+
+                var result = mapper.Map<IEnumerable<ExpenseReadOnlyDTO>>(expenses);
+
+                logger.LogInformation("Search found {Count} expenses for user with term '{Term}'", expenses.Count, userId, searchTerm);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error searching Expenses. {Message}", ex.Message);
+                throw;
+            }
+        }
     }
 }
