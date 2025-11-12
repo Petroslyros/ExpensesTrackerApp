@@ -116,6 +116,23 @@ namespace ExpensesTrackerApp.Controllers
             });
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<ExpenseReadOnlyDTO>>> SearchExpenses(
+        [FromQuery] string query)
+        {
+            if (AppUser == null)
+                return Unauthorized("User must be logged in.");
+
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest(new { message = "Search query cannot be empty" });
+
+            var results = await applicationService.ExpenseService
+                .SearchExpenseAsync(AppUser.Id, query);
+
+            return Ok(results);
+        }
+
 
     }
 }
