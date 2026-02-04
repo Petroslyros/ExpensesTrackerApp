@@ -19,7 +19,6 @@ namespace ExpensesTrackerApp.Repositories
         public async Task<Expense?> GetExpenseByIdAsync(int expenseId)
         {
             return await dbSet
-
                 .FirstOrDefaultAsync(e => e.Id == expenseId);
             //include (eager load) user and expense category for the ReadOnlyDTO
         }

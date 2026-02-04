@@ -37,10 +37,6 @@ namespace ExpensesTrackerApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Verifies that the user is authenticated
-            if (AppUser == null)
-                return Unauthorized("User must be logged in to create an expense.");
-
             // Calls service to create the expense for the logged-in user
             var createdExpense = await applicationService.ExpenseService.CreateExpenseAsync(expenseDto, AppUser.Id);
 
@@ -52,9 +48,6 @@ namespace ExpensesTrackerApp.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteExpense(int id)
         {
-            // Checks if user info exists in the controller (token decoded)
-            if (AppUser == null)
-                return Unauthorized("User must be logged in to delete an expense.");
 
             await applicationService.ExpenseService.DeleteExpenseAsync(id, AppUser.Id);
 
@@ -65,11 +58,9 @@ namespace ExpensesTrackerApp.Controllers
         [Authorize]
         public async Task<ActionResult<List<ExpenseReadOnlyDTO>>> GetExpensesByCategory(int categoryId)
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in.");
 
             var expenses = await applicationService.ExpenseService
-                .GetExpensesByCategoryAsync(AppUser.Id, categoryId);
+                .GetExpensesByCategoryAsync(AppUser!.Id, categoryId);
 
             return Ok(expenses);
         }
@@ -80,11 +71,9 @@ namespace ExpensesTrackerApp.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in.");
 
             var result = await applicationService.ExpenseService
-                .GetPaginatedUserExpensesAsync(AppUser.Id, pageNumber, pageSize);
+                .GetPaginatedUserExpensesAsync(AppUser!.Id, pageNumber, pageSize);
 
             return Ok(result);
         }
@@ -93,8 +82,6 @@ namespace ExpensesTrackerApp.Controllers
         [Authorize]
         public async Task<ActionResult<decimal>> GetTotalAmount()
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in.");
 
             var total = await applicationService.ExpenseService.GetTotalAmountByUserAsync(AppUser.Id);
             return Ok(total);
@@ -104,11 +91,9 @@ namespace ExpensesTrackerApp.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateExpense(int id, [FromBody] ExpenseInsertDTO expenseDto)
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in.");
 
             var updatedExpense = await applicationService.ExpenseService
-                                    .UpdateExpenseAsync(AppUser.Id, id, expenseDto);
+                                    .UpdateExpenseAsync(AppUser!.Id, id, expenseDto);
             return Ok(new
             {
                 Message = "Expense updated successfully!",
@@ -121,14 +106,12 @@ namespace ExpensesTrackerApp.Controllers
         public async Task<ActionResult<IEnumerable<ExpenseReadOnlyDTO>>> SearchExpenses(
         [FromQuery] string query)
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in.");
 
             if (string.IsNullOrWhiteSpace(query))
                 return BadRequest(new { message = "Search query cannot be empty" });
 
             var results = await applicationService.ExpenseService
-                .SearchExpenseAsync(AppUser.Id, query);
+                .SearchExpenseAsync(AppUser!.Id, query);
 
             return Ok(results);
         }

@@ -64,13 +64,13 @@ namespace ExpensesTrackerApp.Data
                 entity.HasOne(d => d.User)
                       .WithMany(p => p.Expenses)
                       .HasForeignKey(d => d.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Cascade); // Delete Expense with User
 
                 // Expense ER
                 entity.HasOne(d => d.ExpenseCategory)
                       .WithMany(p => p.Expenses)
                       .HasForeignKey(d => d.ExpenseCategoryId)
-                      .OnDelete(DeleteBehavior.SetNull);
+                      .OnDelete(DeleteBehavior.SetNull); // If expensecategory is deleted do not delete the expense
             });
 
             modelBuilder.Entity<ExpenseCategory>(entity =>
@@ -121,9 +121,9 @@ namespace ExpensesTrackerApp.Data
                 entity.HasOne(b => b.Category)
                       .WithMany()
                       .HasForeignKey(b => b.CategoryId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.Restrict); // Do not Cascade delete
 
-                // Ensure one budget per user per category
+                //Composite Unique index to Ensure one budget per user per category
                 entity.HasIndex(b => new { b.UserId, b.CategoryId }).IsUnique();
 
                 entity.Property(b => b.InsertedAt)

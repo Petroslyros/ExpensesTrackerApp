@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using ExpensesTrackerApp.Models;
+﻿using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,38 +14,34 @@ namespace ExpensesTrackerApp.Controllers
     [ApiController]
     public class BaseController : ControllerBase
     {
-        // Provides access to all services in one place 
-        public readonly IApplicationService applicationService;
 
-        //AutoMapper for mapping entities to DTOs
-        protected readonly IMapper mapper;
+        public readonly IApplicationService applicationService;
 
         public BaseController(IApplicationService applicationService)
         {
             this.applicationService = applicationService;
         }
 
-        // Backing field for the logged-in user
         private ApplicationUser? appUser;
-
-        /// <summary>
-        /// Returns the currently logged-in user as an ApplicationUser object.
-        /// If no user is logged in, returns null.
-        /// </summary>
         protected ApplicationUser? AppUser
         {
             get
             {
+                //  If we've already extracted the user, return the cached version
+                // (avoids parsing claims multiple times per request)
                 if (appUser != null)
-                    return appUser; // already populated
+                    return appUser;
 
+                //  Check if claims exist at all
                 if (User?.Claims == null || !User.Claims.Any())
-                    return null; // no claims available
+                    return null;
 
+                // Look for the NameIdentifier claim (contains the user ID from JWT)
                 var nameIdentifierClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 if (nameIdentifierClaim == null)
                     return null;
 
+                //  Claims exist and contain user ID, so extract all user info
                 appUser = new ApplicationUser
                 {
                     Id = Convert.ToInt32(nameIdentifierClaim.Value),
@@ -57,6 +52,5 @@ namespace ExpensesTrackerApp.Controllers
                 return appUser;
             }
         }
-
     }
 }

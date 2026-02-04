@@ -31,11 +31,7 @@ namespace ExpensesTrackerApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Verifies that the user is authenticated
-            if (AppUser == null)
-                return Unauthorized("User must be logged in to create an expense.");
-
-            var createdBudget = await applicationService.BudgetService.CreateBudgetAsync(AppUser.Id, budgetDto);
+            var createdBudget = await applicationService.BudgetService.CreateBudgetAsync(AppUser!.Id, budgetDto);
 
             return CreatedAtAction(nameof(GetBudgetById), new { id = createdBudget.Id }, createdBudget);
 
@@ -45,10 +41,8 @@ namespace ExpensesTrackerApp.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteBudget(int id)
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in to delete a budget.");
 
-            await applicationService.BudgetService.DeleteBudgetAsync(id, AppUser.Id);
+            await applicationService.BudgetService.DeleteBudgetAsync(id, AppUser!.Id);
             return Ok(new { message = "Budget deleted successfully." });
         }
 
@@ -56,10 +50,8 @@ namespace ExpensesTrackerApp.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<BudgetReadOnlyDTO>>> GetUserBudgets()
         {
-            if (AppUser == null)
-                return Unauthorized("User must be logged in.");
 
-            var budgets = await applicationService.BudgetService.GetBudgetsByUserAsync(AppUser.Id);
+            var budgets = await applicationService.BudgetService.GetBudgetsByUserAsync(AppUser!.Id);
             return Ok(budgets);
         }
 
