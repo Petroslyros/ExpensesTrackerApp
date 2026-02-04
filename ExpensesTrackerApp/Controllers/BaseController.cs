@@ -27,7 +27,7 @@ namespace ExpensesTrackerApp.Controllers
         {
             get
             {
-                //  If we've already extracted the user, return the cached version
+                //  if user is extracted, return the cached version
                 // (avoids parsing claims multiple times per request)
                 if (appUser != null)
                     return appUser;
