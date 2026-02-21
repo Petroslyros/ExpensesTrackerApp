@@ -5,7 +5,6 @@ using ExpensesTrackerApp.Exceptions;
 using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Repositories.Interfaces;
 using ExpensesTrackerApp.Services.Interfaces;
-using Serilog;
 
 namespace ExpensesTrackerApp.Services
 {
@@ -13,12 +12,13 @@ namespace ExpensesTrackerApp.Services
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
-        private readonly ILogger<ExpenseService> logger = new LoggerFactory().AddSerilog().CreateLogger<ExpenseService>();
+        private readonly ILogger<ExpenseService> logger;
 
-        public ExpenseService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ExpenseService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExpenseService> logger)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -56,14 +56,11 @@ namespace ExpensesTrackerApp.Services
             }
 
             // Create expense linked to the category
-            var expense = new Expense
-            {
-                Title = expenseDto.Title,
-                Amount = expenseDto.Amount,
-                Date = expenseDto.Date,
-                UserId = userId,
-                ExpenseCategoryId = category.Id
-            };
+            var expense = mapper.Map<Expense>(expenseDto);
+
+            expense.UserId = userId;
+            expense.ExpenseCategoryId = category.Id;
+
 
             await unitOfWork.ExpenseRepository.AddAsync(expense);
             await unitOfWork.SaveAsync();
@@ -255,7 +252,7 @@ namespace ExpensesTrackerApp.Services
             existingExpense.Date = expenseDto.Date;
             existingExpense.ExpenseCategoryId = category.Id;
 
-            await unitOfWork.ExpenseRepository.UpdateAsync(existingExpense);
+            await unitOfWork.ExpenseRepository.Update(existingExpense);
             await unitOfWork.SaveAsync();
 
             var updatedExpenseDto = mapper.Map<ExpenseReadOnlyDTO>(existingExpense);
@@ -276,7 +273,7 @@ namespace ExpensesTrackerApp.Services
 
                 var result = mapper.Map<IEnumerable<ExpenseReadOnlyDTO>>(expenses);
 
-                logger.LogInformation("Search found {Count} expenses for user with term '{Term}'", expenses.Count, userId, searchTerm);
+                logger.LogInformation("Search found {Count} expenses for user with term '{Term}'", expenses.Count, searchTerm);
 
                 return result;
             }

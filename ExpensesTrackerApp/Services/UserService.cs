@@ -9,7 +9,6 @@ using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Repositories.Interfaces;
 using ExpensesTrackerApp.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -21,12 +20,12 @@ namespace ExpensesTrackerApp.Services
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
-        private readonly ILogger<UserService> logger = new LoggerFactory().AddSerilog().CreateLogger<UserService>();
-
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ILogger<UserService> logger;
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UserService> logger)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         public async Task<UserReadOnlyDTO?> GetUserByIdAsync(int id)
@@ -180,7 +179,7 @@ namespace ExpensesTrackerApp.Services
             mapper.Map(dto, user);
 
             // Update in DB
-            await unitOfWork.UserRepository.UpdateAsync(user);
+            await unitOfWork.UserRepository.Update(user);
             await unitOfWork.SaveAsync();
 
             logger.LogInformation("User updated successfully: {UserId}", user.Id);

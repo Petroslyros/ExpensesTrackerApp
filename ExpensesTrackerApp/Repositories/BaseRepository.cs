@@ -70,7 +70,7 @@ namespace ExpensesTrackerApp.Repositories
         /// </summary>
         /// <param name="entity">The entity to update.</param>
         #endregion
-        public Task UpdateAsync(T entity)   //Not async, 
+        public Task Update(T entity)   //Not async, 
         {
             dbSet.Attach(entity);
             context.Entry(entity).State = EntityState.Modified;

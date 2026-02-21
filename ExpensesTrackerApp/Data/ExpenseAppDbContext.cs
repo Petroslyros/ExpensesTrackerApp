@@ -30,8 +30,8 @@ namespace ExpensesTrackerApp.Data
                 .HasMaxLength(20);
 
                 entity.Property(e => e.InsertedAt)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .ValueGeneratedOnAdd() //lets SQL Server set the time at creation 
+                .HasDefaultValueSql("GETUTCDATE()"); //use UTC for different time zones
 
                 entity.HasIndex(e => e.Email, "IX_Users_Email").IsUnique();
                 entity.HasIndex(e => e.Username, "IX_Users_Username").IsUnique();
@@ -83,7 +83,7 @@ namespace ExpensesTrackerApp.Data
                       .IsRequired();
 
                 entity.Property(e => e.InsertedAt)
-                      .ValueGeneratedOnAdd()
+                      .ValueGeneratedOnAdd() //lets 
                       .HasDefaultValueSql("GETUTCDATE()");
 
                 entity.Property(e => e.ModifiedAt)

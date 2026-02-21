@@ -4,7 +4,6 @@ using ExpensesTrackerApp.DTO;
 using ExpensesTrackerApp.Exceptions;
 using ExpensesTrackerApp.Repositories.Interfaces;
 using ExpensesTrackerApp.Services.Interfaces;
-using Serilog;
 
 namespace ExpensesTrackerApp.Services
 {
@@ -12,12 +11,13 @@ namespace ExpensesTrackerApp.Services
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
-        private readonly ILogger<ExpenseService> logger = new LoggerFactory().AddSerilog().CreateLogger<ExpenseService>();
+        private readonly ILogger<BudgetService> logger;
 
-        public BudgetService(IUnitOfWork unitOfWork, IMapper mapper)
+        public BudgetService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<BudgetService> logger)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         public async Task<BudgetReadOnlyDTO> CreateBudgetAsync(int userId, BudgetInsertDTO dto)
