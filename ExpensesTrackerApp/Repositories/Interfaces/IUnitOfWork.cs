@@ -2,12 +2,10 @@
 {
     public interface IUnitOfWork
     {
-        UserRepository UserRepository { get; }
-        ExpenseRepository ExpenseRepository { get; }
-        ExpenseCategoryRepository ExpenseCategoryRepository { get; }
-
-        BudgetRepository BudgetRepository { get; }
-
+        IUserRepository UserRepository { get; } // Πρόσθεσε το I
+        IExpenseRepository ExpenseRepository { get; }
+        IExpenseCategoryRepository ExpenseCategoryRepository { get; }
+        IBudgetRepository BudgetRepository { get; }
         Task<bool> SaveAsync();
     }
 }

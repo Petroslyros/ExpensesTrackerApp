@@ -2,7 +2,7 @@
 
 namespace ExpensesTrackerApp.Repositories.Interfaces
 {
-    public interface IBudgetRepository
+    public interface IBudgetRepository : IBaseRepository<Budget>
     {
         Task<Budget?> GetBudgetByUserAndCategoryAsync(int userId, int categoryId);
         Task<List<Budget>> GetBudgetsByUserAsync(int userId);

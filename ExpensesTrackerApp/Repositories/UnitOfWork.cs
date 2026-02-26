@@ -16,13 +16,13 @@ namespace ExpensesTrackerApp.Repositories
 
 
         //implementation of getter with expression-bodied property
-        public UserRepository UserRepository => new(_context);
+        public IUserRepository UserRepository => new UserRepository(_context);
 
-        public ExpenseRepository ExpenseRepository => new(_context);
+        public IExpenseRepository ExpenseRepository => new ExpenseRepository(_context);
 
-        public ExpenseCategoryRepository ExpenseCategoryRepository => new(_context);
+        public IExpenseCategoryRepository ExpenseCategoryRepository => new ExpenseCategoryRepository(_context);
 
-        public BudgetRepository BudgetRepository => new(_context);
+        public IBudgetRepository BudgetRepository => new BudgetRepository(_context);
 
         //for commit and rolback
         public async Task<bool> SaveAsync()

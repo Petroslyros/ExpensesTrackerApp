@@ -2,7 +2,7 @@
 
 namespace ExpensesTrackerApp.Repositories.Interfaces
 {
-    public interface IExpenseCategoryRepository
+    public interface IExpenseCategoryRepository : IBaseRepository<ExpenseCategory>
     {
         Task<ExpenseCategory?> GetByNameAsync(string name);
     }

@@ -6,6 +6,7 @@ using ExpensesTrackerApp.Models;
 using ExpensesTrackerApp.Repositories.Interfaces;
 using ExpensesTrackerApp.Services.Interfaces;
 
+
 namespace ExpensesTrackerApp.Services
 {
     public class ExpenseService : IExpenseService
@@ -273,7 +274,7 @@ namespace ExpensesTrackerApp.Services
 
                 var result = mapper.Map<IEnumerable<ExpenseReadOnlyDTO>>(expenses);
 
-                logger.LogInformation("Search found {Count} expenses for user with term '{Term}'", expenses.Count, searchTerm);
+                logger.LogInformation("Search found {Count} expenses for user with term {Term}", (object)expenses.Count(), searchTerm);
 
                 return result;
             }
